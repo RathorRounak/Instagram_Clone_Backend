@@ -2,15 +2,20 @@ package CLONE.Instagram.service;
 
 import CLONE.Instagram.DTO.*;
 import CLONE.Instagram.entity.Follow;
+import CLONE.Instagram.entity.Post;
 import CLONE.Instagram.entity.Users;
 import CLONE.Instagram.repository.FollowRepository;
+import CLONE.Instagram.repository.Postrepository;
 import CLONE.Instagram.repository.UserRepository;
 import CLONE.Instagram.util.Authutil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,10 +24,14 @@ import java.util.Map;
 public class BackendLogic {
     private final UserRepository ur ;
     private final Map<String, Integer> loginAttempts = new HashMap<>();
+    private final Postrepository pr;
     private final FollowRepository fp;
-    public BackendLogic(UserRepository ur, FollowRepository fp) {
+    @Autowired
+    private BCryptPasswordEncoder encoder;
+    public BackendLogic(UserRepository ur, FollowRepository fp, Postrepository pr) {
         this.ur=ur;
         this.fp = fp;
+        this.pr = pr;
     }
     public Status register(Store store){
         if(store.getUsername() ==null || store.getPassword()==null){
@@ -39,7 +48,7 @@ public class BackendLogic {
         }
         Users user = new Users();
         user.setUsername(store.getUsername());
-        user.setPassword(store.getPassword());
+        user.setPassword(encoder.encode(store.getPassword()));
         ur.save(user);
 
         return new Status("success", "Registration Successful");
@@ -62,7 +71,7 @@ public class BackendLogic {
         return new Status("error","Login attempts exceeded");
     }
 
-    if(!user.getPassword().equals(store.getPassword())){
+    if(!encoder.matches(store.getPassword(),user.getPassword())){
         loginAttempts.put(ip,attempts+1);
         return new Status("error","Wrong Password");
     }
@@ -182,4 +191,54 @@ public class BackendLogic {
                 .map(f ->new UsernameResponse(f.getFollowing().getUsername()))
                 .toList();
     }
+
+    public Status createPost(CreatePostRequest cpr,HttpSession session){
+        if(!Authutil.isLoggedIn(session)){
+            return new Status("error" ,"Login required" );
+        }
+        if (cpr.getImageUrl() == null || cpr.getImageUrl().isBlank()) {
+            return new Status("error", "Image URL required");
+        }
+
+        if (cpr.getCaption() != null && cpr.getCaption().length() > 500) {
+            return new Status("error", "Caption too long");
+        }
+        String username = (String)session.getAttribute("username");
+        Users user = ur.findByUsername(username).orElseThrow();
+        Post post = new Post();
+        post.setCaption(cpr.getCaption());
+        post.setPhotoPath(cpr.getImageUrl());
+        post.setCreatedAt(LocalDateTime.now());
+        pr.save(post);
+        return new Status("success","Post successfully uploaded");
+    }
+    public Status deletePost(Long postId,HttpSession session){
+        if(!Authutil.isLoggedIn(session)){
+            return new Status("error" ,"Login required" );
+        }
+        Post post = pr.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+        String username = (String)session.getAttribute("username");
+        if (!post.getUser().getUsername().equals(username)) {
+            return new Status("error", "Not allowed");
+        }
+        pr.delete(post);
+        return new Status("success","Post successfully deleted");
+    }
+    public List<PostResponse> getUserPosts(String username) {
+
+        Users user = ur.findByUsername(username).orElseThrow();
+
+        return pr.findByUsersOrderByCreatedAtDesc(user)
+                .stream()
+                .map(p -> new PostResponse(
+                        p.getId(),
+                        p.getCaption(),
+                        p.getPhotoPath(),
+                        p.getCreatedAt()
+                ))
+                .toList();
+    }
+
+
 }

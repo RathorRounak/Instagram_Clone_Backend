@@ -122,7 +122,36 @@ public class ApiController {
         }
         return ResponseEntity.ok(s);
     }
+    @PostMapping("/posts")
+    public ResponseEntity<Status> createPost(
+            @RequestBody CreatePostRequest req,
+            HttpSession session) {
+        try{
+            Status s = bl.createPost(req, session);
+            return ResponseEntity.ok(s);
+        }
+        catch(Exception e){
+            return ResponseEntity.status(401).build();
+        }
+    }
+    @DeleteMapping("/posts/{id}")
+    public ResponseEntity<Status> deletePost(
+            @PathVariable Long id,
+            HttpSession session) {
 
+        Status s = bl.deletePost(id, session);
+
+        if ("error".equals(s.getStatus())) {
+            return ResponseEntity.badRequest().body(s);
+        }
+
+        return ResponseEntity.ok(s);
+    }
+
+    @GetMapping("/posts/{username}")
+    public List<PostResponse> userPosts(@PathVariable String username) {
+        return bl.getUserPosts(username);
+    }
 
 
 }
