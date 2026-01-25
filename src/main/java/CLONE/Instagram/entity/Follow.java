@@ -13,21 +13,21 @@ public class Follow {
 
     @ManyToOne
     @JoinColumn(name="follower_id",nullable=false)
-    private Users follower;
+    private User follower;
     @ManyToOne
     @JoinColumn(name="following_id",nullable=false)
-    private Users following;
+    private User following;
 
-    public Users getFollower() {
+    public User getFollower() {
         return follower;
     }
-    public void setFollower(Users follower) {
+    public void setFollower(User follower) {
         this.follower = follower;
     }
-    public Users getFollowing() {
+    public User getFollowing() {
         return following;
     }
-    public void setFollowing(Users following) {
+    public void setFollowing(User following) {
         this.following = following;
     }
 

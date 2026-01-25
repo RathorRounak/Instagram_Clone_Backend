@@ -2,16 +2,16 @@ package CLONE.Instagram.repository;
 
 
 import CLONE.Instagram.entity.Follow;
-import CLONE.Instagram.entity.Users;
+import CLONE.Instagram.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
 public interface FollowRepository extends JpaRepository<Follow, Long> {
-    boolean existsByFollowerAndFollowing(Users follower, Users following);
+    boolean existsByFollowerAndFollowing(User follower, User following);
 
-    void deleteByFollowerAndFollowing(Users follower, Users following);
+    void deleteByFollowerAndFollowing(User follower, User following);
 
-    List<Follow> findByFollower(Users follower);
-    List<Follow> findByFollowing(Users following);
+    List<Follow> findByFollower(User follower);
+    List<Follow> findByFollowing(User following);
 }

@@ -9,6 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+@CrossOrigin(
+        origins = "http://localhost:5173",
+        allowCredentials = "true"
+)
 
 @RestController
 public class ApiController {
@@ -152,6 +156,57 @@ public class ApiController {
     public List<PostResponse> userPosts(@PathVariable String username) {
         return bl.getUserPosts(username);
     }
+
+    @GetMapping("/feed")
+    public ResponseEntity<?> feed(HttpSession session) {
+        try {
+            return ResponseEntity.ok(bl.getFeed(session));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(401).body("Login required");
+        }
+    }
+
+    @PostMapping("/posts/{id}/like")
+    public ResponseEntity<Status> likePost(
+            @PathVariable Long id,
+            HttpSession session) {
+
+        Status s = bl.likePost(id, session);
+
+        if ("error".equals(s.getStatus())) {
+            return ResponseEntity.badRequest().body(s);
+        }
+
+        return ResponseEntity.ok(s);
+    }
+
+    @DeleteMapping("/posts/{id}/like")
+    public ResponseEntity<Status> unlikePost(
+            @PathVariable Long id,
+            HttpSession session) {
+
+        Status s = bl.unlikePost(id, session);
+
+        if ("error".equals(s.getStatus())) {
+            return ResponseEntity.badRequest().body(s);
+        }
+
+        return ResponseEntity.ok(s);
+    }
+
+    @GetMapping("/debug/session")
+    public String debug(HttpSession session) {
+        return String.valueOf(session.getAttribute("username"));
+    }
+
+    @GetMapping("/debug/session-id")
+    public String sessionId(HttpSession session) {
+        return session.getId();
+    }
+
+
+
+
 
 
 }

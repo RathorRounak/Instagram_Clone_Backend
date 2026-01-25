@@ -1,0 +1,240 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background-color: #0f172a;
+  color: #f9fafb;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+  background-color: #020617;
+  border-bottom: 1px solid #1f2937;
+}
+
+.brand {
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.nav-link {
+  font-size: 0.9rem;
+}
+
+.nav-button {
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid #4b5563;
+  background: transparent;
+  color: #e5e7eb;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.nav-button:hover {
+  background-color: #111827;
+}
+
+.app-main {
+  flex: 1;
+  max-width: 800px;
+  margin: 1.5rem auto;
+  padding: 0 1rem 2rem;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.card {
+  background-color: #020617;
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid #1f2937;
+}
+
+.form-card {
+  max-width: 480px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.form-field span {
+  font-size: 0.85rem;
+  color: #e5e7eb;
+}
+
+input,
+textarea {
+  padding: 0.45rem 0.6rem;
+  border-radius: 0.5rem;
+  border: 1px solid #4b5563;
+  background-color: #020617;
+  color: #f9fafb;
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: #6366f1;
+}
+
+.primary-button,
+.secondary-button {
+  border-radius: 999px;
+  border: none;
+  padding: 0.45rem 1.1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.primary-button {
+  background: linear-gradient(to right, #ec4899, #6366f1);
+  color: #f9fafb;
+}
+
+.secondary-button {
+  background-color: #111827;
+  color: #e5e7eb;
+}
+
+.primary-button:disabled,
+.secondary-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-text {
+  color: #f97373;
+  font-size: 0.85rem;
+}
+
+.feed-page .list-card,
+.profile-page .list-card {
+  margin-top: 0.5rem;
+}
+
+.post-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.post {
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid #1f2937;
+  background-color: #020617;
+}
+
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.post-author {
+  font-size: 0.9rem;
+  color: #e5e7eb;
+}
+
+.post-image-wrapper {
+  margin: 0.25rem 0;
+}
+
+.post-image {
+  width: 100%;
+  border-radius: 0.5rem;
+  max-height: 400px;
+  object-fit: cover;
+}
+
+.post-body {
+  margin-top: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.post-footer {
+  margin-top: 0.5rem;
+}
+
+.like-button {
+  border-radius: 999px;
+  border: 1px solid #4b5563;
+  padding: 0.25rem 0.7rem;
+  background-color: transparent;
+  color: #e5e7eb;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.like-button.liked {
+  border-color: #ec4899;
+  color: #f9a8d4;
+}
+
+.avatar-large {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(to right, #f97316, #ec4899);
+  font-weight: 600;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.profile-info {
+  flex: 1;
+}
+
+.profile-stats {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  color: #9ca3af;
+}

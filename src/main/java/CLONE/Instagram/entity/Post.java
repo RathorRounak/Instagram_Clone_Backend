@@ -11,21 +11,21 @@ public class Post {
     private Long id;
 
     @Column()
-    private String photoPath;
+    private String imageUrl;
     @Column(length=105)
     private String caption;
 
     @ManyToOne
     @JoinColumn(name="user_id", nullable=false)
-    private Users user;
+    private User user;
 
-    private LocalDateTime createAt;
+    private LocalDateTime createdAt;
 
-    public String  getPhotoPath() {
-        return photoPath;
+    public String  getImageUrl() {
+        return imageUrl;
     }
-    public void setPhotoPath(String photoPath) {
-        this.photoPath = photoPath;
+    public void setImageUrl(String photoPath) {
+        this.imageUrl = photoPath;
     }
     public String getCaption() {
         return caption;
@@ -34,15 +34,15 @@ public class Post {
         this.caption = caption;
     }
     public LocalDateTime getCreateAt() {
-        return createAt;
+        return createdAt;
     }
     public void setCreatedAt(LocalDateTime createAt) {
-        this.createAt = createAt;
+        this.createdAt = createAt;
     }
-    public Users getUser(){
+    public User getUser(){
         return user;
     }
-    public void setUser(Users user){
+    public void setUser(User user){
         this.user = user;
     }
     public Long getId() {
@@ -52,7 +52,7 @@ public class Post {
         this.id = id;
     }
     public LocalDateTime getCreatedAt() {
-        return createAt;
+        return createdAt;
     }
 
 }

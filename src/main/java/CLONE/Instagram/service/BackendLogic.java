@@ -2,11 +2,13 @@ package CLONE.Instagram.service;
 
 import CLONE.Instagram.DTO.*;
 import CLONE.Instagram.entity.Follow;
+import CLONE.Instagram.entity.Like;
 import CLONE.Instagram.entity.Post;
-import CLONE.Instagram.entity.Users;
+import CLONE.Instagram.entity.User;
 import CLONE.Instagram.repository.FollowRepository;
 import CLONE.Instagram.repository.Postrepository;
 import CLONE.Instagram.repository.UserRepository;
+import CLONE.Instagram.repository.LikeRepository;
 import CLONE.Instagram.util.Authutil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -26,12 +28,14 @@ public class BackendLogic {
     private final Map<String, Integer> loginAttempts = new HashMap<>();
     private final Postrepository pr;
     private final FollowRepository fp;
+    private final LikeRepository lr;
     @Autowired
     private BCryptPasswordEncoder encoder;
-    public BackendLogic(UserRepository ur, FollowRepository fp, Postrepository pr) {
+    public BackendLogic(UserRepository ur, FollowRepository fp, Postrepository pr, LikeRepository lr) {
         this.ur=ur;
         this.fp = fp;
         this.pr = pr;
+        this.lr=lr;
     }
     public Status register(Store store){
         if(store.getUsername() ==null || store.getPassword()==null){
@@ -46,7 +50,7 @@ public class BackendLogic {
         if(store.getUsername().equals(ur.findByUsername(store.getUsername()))){
             return new Status("error","Username already exists");
         }
-        Users user = new Users();
+        User user = new User();
         user.setUsername(store.getUsername());
         user.setPassword(encoder.encode(store.getPassword()));
         ur.save(user);
@@ -61,7 +65,7 @@ public class BackendLogic {
     if(store.getUsername().isEmpty() || store.getPassword().isEmpty()){
         return new Status("error","Username or password cannot be empty");
     }
-    Users user = ur.findByUsername(store.getUsername()).orElse(null);
+    User user = ur.findByUsername(store.getUsername()).orElse(null);
     if(user==null){
         return new Status("error","User not found");
     }
@@ -85,7 +89,7 @@ public class BackendLogic {
             return new Status("error","You are not logged in");
         }
         String username = (String)session.getAttribute("username");
-        Users user = ur.findByUsername(username).orElse(null);
+        User user = ur.findByUsername(username).orElse(null);
         if(user==null){
             return new Status("error","User not found");
         }
@@ -110,7 +114,7 @@ public class BackendLogic {
             return new UserProfileResponse("Login required");
         }
         String username = (String)session.getAttribute("username");
-        Users user = ur.findByUsername(username).orElseThrow();
+        User user = ur.findByUsername(username).orElseThrow();
         return new UserProfileResponse(
                 user.getUsername(),
                 user.getBio(),
@@ -125,14 +129,14 @@ public class BackendLogic {
             return new Status("error", "Login required");
         }
         String currentUsername = (String)session.getAttribute("username");
-        Users user = ur.findByUsername(currentUsername).orElseThrow();
+        User user = ur.findByUsername(currentUsername).orElseThrow();
 
         if (currentUsername.equals(targetUsername)) {
             return new Status("error", "You cannot follow yourself");
         }
 
-        Users following = ur.findByUsername(targetUsername).orElseThrow();
-        Users follower = ur.findByUsername(currentUsername).orElseThrow();
+        User following = ur.findByUsername(targetUsername).orElseThrow();
+        User follower = ur.findByUsername(currentUsername).orElseThrow();
         if (fp.existsByFollowerAndFollowing(follower, following)) {
             return new Status("error", "Already following");
         }
@@ -150,8 +154,8 @@ public class BackendLogic {
             return new Status("error", "Login required");
         }
         String currentUsername = (String)session.getAttribute("username");
-        Users follower = ur.findByUsername(currentUsername).orElse(null);
-        Users following = ur.findByUsername(targetUsername).orElse(null);
+        User follower = ur.findByUsername(currentUsername).orElse(null);
+        User following = ur.findByUsername(targetUsername).orElse(null);
         if(follower==null){
             return new Status("error","User not found");
         }
@@ -171,7 +175,7 @@ public class BackendLogic {
             throw new RuntimeException("Login required");
         }
         String username = (String)session.getAttribute("username");
-        Users user = ur.findByUsername(username).orElseThrow();
+        User user = ur.findByUsername(username).orElseThrow();
         return  fp.findByFollowing(user)
                 .stream()
                 .map(f -> new UsernameResponse(f.getFollower().getUsername()))
@@ -184,7 +188,7 @@ public class BackendLogic {
             throw new RuntimeException("Login required");
         }
         String username = (String)session.getAttribute("username");
-        Users user = ur.findByUsername(username).orElseThrow();
+        User user = ur.findByUsername(username).orElseThrow();
 
         return  fp.findByFollower(user)
                 .stream()
@@ -204,10 +208,11 @@ public class BackendLogic {
             return new Status("error", "Caption too long");
         }
         String username = (String)session.getAttribute("username");
-        Users user = ur.findByUsername(username).orElseThrow();
+        User user = ur.findByUsername(username).orElseThrow();
         Post post = new Post();
+        post.setUser(user);
         post.setCaption(cpr.getCaption());
-        post.setPhotoPath(cpr.getImageUrl());
+        post.setImageUrl(cpr.getImageUrl());
         post.setCreatedAt(LocalDateTime.now());
         pr.save(post);
         return new Status("success","Post successfully uploaded");
@@ -227,17 +232,83 @@ public class BackendLogic {
     }
     public List<PostResponse> getUserPosts(String username) {
 
-        Users user = ur.findByUsername(username).orElseThrow();
+        User user = ur.findByUsername(username).orElseThrow();
 
-        return pr.findByUsersOrderByCreatedAtDesc(user)
+        return pr.findByUserOrderByCreatedAtDesc(user)
                 .stream()
                 .map(p -> new PostResponse(
                         p.getId(),
                         p.getCaption(),
-                        p.getPhotoPath(),
+                        p.getImageUrl(),
                         p.getCreatedAt()
                 ))
                 .toList();
+    }
+    public List<PostResponse> getFeed(HttpSession session){
+        if(!Authutil.isLoggedIn(session)){
+            throw new RuntimeException("Login required");
+        }
+        String username = (String)session.getAttribute("username");
+        User currentUser = ur.findByUsername(username).orElseThrow();
+        List<User> followingUsers = fp.findByFollower(currentUser)
+                .stream()
+                .map(f ->f.getFollowing())
+                .toList();
+
+        if (followingUsers.isEmpty()) {
+            return List.of();
+        }
+        return pr.findFeedPosts(followingUsers)
+                .stream()
+                .map(p -> new PostResponse(
+                    p.getId(),
+                    p.getCaption(),
+                    p.getImageUrl(),
+                    p.getCreatedAt()
+                ))
+                .toList();
+
+
+    }
+    public Status likePost(Long postId, HttpSession session) {
+
+        if (!Authutil.isLoggedIn(session)) {
+            return new Status("error", "Login required");
+        }
+
+        String username = (String) session.getAttribute("username");
+        User user = ur.findByUsername(username).orElseThrow();
+
+        Post post = pr.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+
+        if (lr.existsByUserAndPost(user, post)) {
+            return new Status("error", "Post already liked");
+        }
+
+        Like like = new Like();
+        like.setUser(user);
+        like.setPost(post);
+        like.setCreatedAt(LocalDateTime.now());
+
+        lr.save(like);
+        return new Status("success", "Post liked");
+    }
+    public Status unlikePost(Long PostId, HttpSession session) {
+        if(!Authutil.isLoggedIn(session)){
+            return new Status("error", "Login required");
+        }
+        String username = (String) session.getAttribute("username");
+        User user = ur.findByUsername(username).orElseThrow();
+
+
+        Post post = pr.findById(PostId).orElseThrow(() -> new RuntimeException("Post not found"));
+        if (!lr.existsByUserAndPost(user, post)) {
+            return new Status("error", "Post not liked");
+        }
+
+        lr.deleteByUserAndPost(user,post);
+        return new Status("success","Post unliked");
     }
 
 
