@@ -23,10 +23,7 @@ The codebase evolves as I learn better ways to architect systems.
 🎨 Frontend Help Wanted!
 Currently, I am focusing 100% on the Backend logic.
 
-Note: There is no frontend for this project yet. If you are a frontend developer looking to hook up a React, Angular, or Vue app to a solid Spring Boot API, I'd love to collaborate! Please reach out or open a PR.
-
-🛠 How to Run (Local)
-Clone the repo: git clone <your-link>
+Note: I have added a frontend but its not working properly . Please focus on the backend Part and please give any suggestion for my project
 
 Setup your SQL schema using MySQL Workbench.
 
